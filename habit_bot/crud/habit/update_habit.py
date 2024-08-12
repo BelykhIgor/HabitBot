@@ -1,0 +1,180 @@
+
+import logging
+
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
+from habit_bot.button_menu import  create_update_keyboard
+from habit_bot.states_group.states import  UpdateHabit
+from services.handlers import update_habit_by_id, record_message_id
+
+logging.basicConfig(level=logging.INFO)
+logger: logging.Logger = logging.getLogger(__name__)
+
+
+async def update_habit_name(message: Message, state: FSMContext):
+    """
+    Обновляет название привычки и запрашивает, нужно ли вносить дополнительные изменения.
+
+    Эта функция получает новое название привычки от пользователя,
+    обновляет состояние машины состояний и отправляет сообщение с запросом на дальнейшие изменения.
+
+    Args:
+       message (Message): Сообщение от пользователя, содержащее новое название привычки.
+       state (FSMContext): Контекст состояния для сохранения промежуточных данных.
+
+    Flow Control:
+       - Извлекает идентификатор пользователя и текущее состояние.
+       - Обновляет название привычки в состоянии.
+       - Устанавливает состояние на ожидание дальнейших изменений.
+       - Отправляет сообщение с вопросом о дополнительных изменениях.
+
+    Logging:
+       - Не используется.
+    """
+    bot_user_id = message.from_user.id
+    data = await state.get_data()
+    habit_id = data["habit_id"]
+    await state.update_data(habit_name=message.text)
+    await state.set_state(UpdateHabit.all_duration)
+    sent_message = await message.answer(
+        "Хотите еще что то изменить?",
+        reply_markup=await create_update_keyboard(habit_id),
+        parse_mode="Markdown",
+    )
+    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+
+
+async def update_habit_description(message: Message, state: FSMContext):
+    """
+    Обновляет описание привычки и запрашивает, нужно ли вносить дополнительные изменения.
+
+    Эта функция получает новое описание привычки от пользователя,
+    обновляет состояние машины состояний и отправляет сообщение с запросом на дальнейшие изменения.
+
+    Args:
+    message (Message): Сообщение от пользователя, содержащее новое описание привычки.
+    state (FSMContext): Контекст состояния для сохранения промежуточных данных.
+
+    Flow Control:
+    - Извлекает идентификатор пользователя и текущее состояние.
+    - Обновляет описание привычки в состоянии.
+    - Устанавливает состояние на ожидание дальнейших изменений.
+    - Отправляет сообщение с вопросом о дополнительных изменениях.
+
+    Logging:
+    - Не используется.
+    """
+    bot_user_id = message.from_user.id
+    data = await state.get_data()
+    habit_id = data["habit_id"]
+    await state.update_data(habit_description=message.text)
+    await state.set_state(UpdateHabit.all_duration)
+    sent_message = await message.answer(
+        "Хотите еще что то изменить?",
+        reply_markup=await create_update_keyboard(habit_id),
+        parse_mode="Markdown",
+    )
+    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+
+
+async def update_habit_duration(message: Message, state: FSMContext):
+    """
+    Обновляет продолжительность привычки и запрашивает, нужно ли вносить дополнительные изменения.
+
+    Эта функция получает новое значение продолжительности привычки от пользователя,
+    обновляет состояние машины состояний и отправляет сообщение с запросом на дальнейшие изменения.
+
+    Args:
+        message (Message): Сообщение от пользователя, содержащее новую продолжительность привычки.
+        state (FSMContext): Контекст состояния для сохранения промежуточных данных.
+
+    Flow Control:
+        - Извлекает идентификатор пользователя и текущее состояние.
+        - Обновляет продолжительность привычки в состоянии.
+        - Устанавливает состояние на ожидание дальнейших изменений.
+        - Отправляет сообщение с вопросом о дополнительных изменениях.
+
+    Logging:
+        - Не используется.
+    """
+    bot_user_id = message.from_user.id
+    data = await state.get_data()
+    habit_id = data["habit_id"]
+    await state.update_data(all_duration=message.text)
+    await state.set_state(UpdateHabit.reminder_time)
+    sent_message = await message.answer(
+        "Хотите еще что то изменить?",
+        reply_markup=await create_update_keyboard(habit_id),
+        parse_mode="Markdown",
+    )
+    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+
+
+async def update_habit_reminder(message: Message, state: FSMContext):
+    """
+    Обновляет время напоминания привычки и запрашивает, нужно ли вносить дополнительные изменения.
+
+    Эта функция получает новое время напоминания от пользователя,
+    обновляет состояние машины состояний и отправляет сообщение с запросом на дальнейшие изменения.
+
+    Args:
+        message (Message): Сообщение от пользователя, содержащее новое время напоминания.
+        state (FSMContext): Контекст состояния для сохранения промежуточных данных.
+
+    Flow Control:
+        - Извлекает идентификатор пользователя и текущее состояние.
+        - Обновляет время напоминания в состоянии.
+        - Устанавливает состояние на ожидание сохранения обновлений.
+        - Отправляет сообщение с вопросом о дополнительных изменениях.
+
+    Logging:
+        - Не используется.
+    """
+    bot_user_id = message.from_user.id
+    data = await state.get_data()
+    habit_id = data["habit_id"]
+    await state.update_data(reminder_time=message.text)
+    await state.set_state(UpdateHabit.save_update)
+    sent_message = await message.answer(
+        "Хотите еще что то изменить?",
+        reply_markup=await create_update_keyboard(habit_id),
+        parse_mode="Markdown",
+    )
+    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+
+
+async def save_update_habit(state: FSMContext):
+    """
+    Сохраняет обновления привычки в базе данных.
+
+    Эта функция извлекает данные об обновлениях привычки из состояния,
+    формирует словарь с обновленными данными и сохраняет их в базе данных.
+
+    Args:
+        state (FSMContext): Контекст состояния для получения обновленных данных.
+
+    Returns:
+        Habit: Объект Habit, представляющий обновленную привычку.
+
+    Flow Control:
+        - Извлекает данные о привычке из состояния.
+        - Формирует словарь с обновленными данными.
+        - Вызывает функцию обновления привычки в базе данных.
+        - Очищает состояние.
+
+    Logging:
+        - Логирует информацию о начале сохранения обновлений привычки и результат.
+    """
+    data = await state.get_data()
+    habit_info = {
+        "habit_id": data.get("habit_id"),
+        "habit_name": data.get("habit_name", None),
+        "habit_description": data.get("habit_description", None),
+        "all_duration": data.get("all_duration", None),
+        "reminder_time": data.get("reminder_time", None),
+    }
+    logger.info(f"Start save_update_habit - {habit_info}")
+    await state.clear()
+    habit = await update_habit_by_id(habit_info)
+    logger.info(f"Save data habit - {habit}")
+    return habit
