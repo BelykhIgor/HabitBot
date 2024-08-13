@@ -35,6 +35,7 @@ services:
       - DB_PORT=${DB_PORT}
     depends_on:
       - postgres_server
+    command: ["sh", "-c", "alembic upgrade head"]
     networks:
       - habit_control
   adminer:
