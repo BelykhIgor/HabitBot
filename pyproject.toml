@@ -19,8 +19,8 @@ asyncpg = "0.29.0"
 passlib = {extras = ["argon2"], version = "1.7.4"}
 aiogram = "3.10.0"
 isort = "5.13.2"
-psycopg2 = "^2.9.9"
-sentry-sdk = "^2.12.0"
+psycopg2 = "2.9.9"
+sentry-sdk = "2.12.0"
 
 
 
