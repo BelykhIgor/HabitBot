@@ -1,13 +1,10 @@
-import asyncio
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from sqlalchemy.ext.asyncio import AsyncEngine
-
-from app.db.database import engine
 from config import DB_USER, DB_NAME, DB_PORT, DB_HOST, DB_PASS
 
 DATABASE_URL = (
