@@ -403,7 +403,8 @@ async def handle_habit_item(call: CallbackQuery):
             habit_info = await get_habit_info_by_id(habit_id)
             sent_message = await bot.send_message(
                 call.message.chat.id, f"{habit_info}",
-                reply_markup=await get_habit_info_menu(habit_id)
+                reply_markup=await get_habit_info_menu(habit_id),
+                parse_mode="Markdown",
             )
             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
@@ -425,7 +426,8 @@ async def handle_habit_item(call: CallbackQuery):
             habit_info = await get_habit_info_by_id(habit_id)
             sent_message = await bot.send_message(
                 call.message.chat.id, f"{habit_info}",
-                reply_markup=await get_habit_info_menu(habit_id)
+                reply_markup=await get_habit_info_menu(habit_id),
+                parse_mode="Markdown",
             )
             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         else:

@@ -31,14 +31,14 @@ async def get_habit_info_by_id(habit_id):
 
     if habit:
         count_remaining_days = int(habit.duration) - int(habit.count_remained_day)
-        habit_info = (f"Формируемая привычка: {habit.habit_name}\n"
-                      f"Создана - {habit.created_date}\n"
-                      f"Описание - {habit.comments}\n"
-                      f"Общая продолжительность дней - {habit.duration}\n"
-                      f"Отправлять напоминание в - {habit.reminder_time}\n"
-                      f"Выполнено - {count_habit_complected} дней\n"
-                      f"Не выполнено - {count_habit_not_complected} дней\n"
-                      f"Осталось - {count_remaining_days} дней")
+        habit_info = (f"*Формируемая привычка:* {habit.habit_name}\n"
+                      f"*Создана* - {habit.created_date}\n"
+                      f"*Описание* - {habit.comments}\n"
+                      f"*Общая продолжительность дней* - {habit.duration}\n"
+                      f"*Отправлять напоминание в* - {habit.reminder_time}\n"
+                      f"*Выполнено* - {count_habit_complected} дней\n"
+                      f"*Не выполнено* - {count_habit_not_complected} дней\n"
+                      f"*Осталось* - {count_remaining_days} дней")
         return habit_info
     return None
 

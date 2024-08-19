@@ -50,7 +50,7 @@ async def update_phone(message: Message, state: FSMContext):
     bot_user_id = message.from_user.id
     number_phone = message.text
     if validate_phone_number(number_phone):
-        await state.update_data(fullname=message.text)
+        await state.update_data(phone=message.text)
         await state.set_state(UpdateProfile.email)
         sent_message = await message.answer(
             "Хотите еще что то изменить?",
@@ -71,7 +71,7 @@ async def update_email(message: Message, state: FSMContext):
     bot_user_id = message.from_user.id
     email = message.text
     if validate_email(email):
-        await state.update_data(fullname=message.text)
+        await state.update_data(email=message.text)
         await state.set_state(UpdateProfile.city)
         sent_message = await message.answer(
             "Хотите еще что то изменить?",
@@ -90,7 +90,7 @@ async def update_email(message: Message, state: FSMContext):
 
 async def update_city(message: Message, state: FSMContext):
     bot_user_id = message.from_user.id
-    await state.update_data(fullname=message.text)
+    await state.update_data(city=message.text)
     await state.set_state(UpdateProfile.save_update)
     sent_message = await message.answer(
         "Хотите еще что то изменить?",

@@ -865,7 +865,7 @@ async def delete_job_reminder(habit_id: int):
     async with get_async_session() as session:
         query = select(SchedulerJobs).where(SchedulerJobs.habit_id == habit_id)
         result = await session.execute(query)
-        job = result.one_or_none()
+        job = result.scalars().one_or_none()
         if job:
             await session.delete(job)
             await session.commit()

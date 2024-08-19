@@ -75,6 +75,7 @@ class UpdateHabit(StatesGroup):
        reminder_time: Состояние для ввода нового времени напоминания.
        save_update: Состояние для подтверждения обновления привычки.
     """
+    bot_user_id = State()
     habit_id = State()
     habit_name = State()
     all_duration = State()

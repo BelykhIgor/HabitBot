@@ -1,11 +1,10 @@
-version: '3.8'
 
 services:
   postgres_server:
     container_name: 'postgres_container'
     image: postgres:16.0
     env_file:
-      - ../HabitControlService/.env.docker
+      - .env.docker
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
@@ -13,7 +12,7 @@ services:
     ports:
       - "${DB_PORT}:${DB_PORT}"
     volumes:
-      - ./postgres_db/postgres:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - habit_control
 
@@ -26,7 +25,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ../HabitControlService/.env.docker
+      - .env.docker
     environment:
       - APP_PORT=8000
       - DB_USER=${DB_USER}
@@ -49,7 +48,7 @@ services:
     networks:
       - habit_control
 volumes:
-  postgres-data:
+  postgres_data:
 
 networks:
   habit_control:

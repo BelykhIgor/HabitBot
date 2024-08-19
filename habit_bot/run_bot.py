@@ -71,8 +71,11 @@ async def main():
        None
     """
     try:
-        await start_scheduler()
+        scheduler.start()
+        logger.info("Scheduler started successfully.")
+        # await start_scheduler()
         await check_and_add_jobs()
+        # await scheduler.start()
         await start_bot()
     except Exception as e:
         logger.error(f"Bot polling failed: {e}")
