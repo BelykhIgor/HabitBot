@@ -12,7 +12,9 @@ from app.db.database import get_async_session, engine, Base
 from config import APP_PORT
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import User
+from habit_bot.bot_init import scheduler
 from habit_bot.run_bot import start_bot
+from habit_bot.run_reminder import check_and_add_jobs
 
 logging.basicConfig(level=logging.INFO)
 logger: logging.Logger = logging.getLogger(__name__)
@@ -32,25 +34,42 @@ sentry_sdk.init(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Запускает процесс создания тестовых данных.
+    Контекстный менеджер, запускающий бота и планировщик.
 
-    Эта функция асинхронного контекстного менеджера
-    управляет настройкой тестовых данных,
-    включая:
-    - Создание необходимых таблиц базы данных.
+    Этот менеджер обеспечивает запуск бота и планировщика,
+    а также управление их жизненным циклом в рамках приложения FastAPI.
 
     Parameters:
-        app (FastAPI): Экземпляр приложения Fast API.
+        app (FastAPI): Экземпляр приложения FastAPI.
 
     Yields:
-        None: Эта функция не выдает никакого значения.
+        None: Эта функция не возвращает значения.
     """
     async with get_async_session() as session:
-        # await create_table()
-        bot_task = asyncio.create_task(start_bot())
+        # Создаем задачу для запуска бота и планировщика
+        bot_task = asyncio.create_task(start_bot_and_scheduler())
     yield
     bot_task.cancel()
     await engine.dispose()
+
+async def start_bot_and_scheduler():
+    """
+    Запускает как бота, так и планировщик.
+
+    Эта функция запускает планировщик, добавляет задачи в него,
+    а затем начинает работу бота.
+
+    Returns:
+        None
+    """
+    try:
+        scheduler.start()
+        logger.info("Scheduler started successfully.")
+        await check_and_add_jobs()  # Добавляем незавершенные задачи в планировщик
+        await start_bot()  # Запускаем бота и начинаем обработку сообщений
+    except Exception as e:
+        logger.error(f"Bot polling failed: {e}")
+        await start_bot()  # Если бот упал, пытаемся его запустить заново
 
 
 def create_app() -> FastAPI:
