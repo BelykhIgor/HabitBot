@@ -44,7 +44,7 @@ async def update_habit_name(message: Message, state: FSMContext):
         reply_markup=await create_update_keyboard(habit_id),
         parse_mode="Markdown",
     )
-    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+    # await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
 
 
 async def update_habit_description(message: Message, state: FSMContext):
@@ -77,7 +77,7 @@ async def update_habit_description(message: Message, state: FSMContext):
         reply_markup=await create_update_keyboard(habit_id),
         parse_mode="Markdown",
     )
-    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
 
 
 async def update_habit_duration(message: Message, state: FSMContext):
@@ -110,7 +110,7 @@ async def update_habit_duration(message: Message, state: FSMContext):
         reply_markup=await create_update_keyboard(habit_id),
         parse_mode="Markdown",
     )
-    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
 
 
 async def update_habit_reminder(message: Message, state: FSMContext):
@@ -144,7 +144,7 @@ async def update_habit_reminder(message: Message, state: FSMContext):
         reply_markup=await create_update_keyboard(habit_id),
         parse_mode="Markdown",
     )
-    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
 
 
 async def save_update_habit(state: FSMContext):

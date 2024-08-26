@@ -22,7 +22,7 @@ async def update_username(message: Message, state: FSMContext):
         reply_markup=await update_user_keyboard(bot_user_id),
         parse_mode="Markdown",
     )
-    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+    # await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
 
 
 async def update_age(message: Message, state: FSMContext):
@@ -36,9 +36,12 @@ async def update_age(message: Message, state: FSMContext):
             reply_markup=await update_user_keyboard(bot_user_id),
             parse_mode="Markdown",
         )
-        await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
     else:
-        await bot.delete_message(message.chat.id, message.message_id)
+        try:
+            await bot.delete_message(message.chat.id, message.message_id)
+        except Exception as e:
+            logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
         sent_message = await message.answer(
             "Неверный формат. Введите ваш возраст цифрами от 1 до 100",
             parse_mode="Markdown"
@@ -57,9 +60,12 @@ async def update_phone(message: Message, state: FSMContext):
             reply_markup=await update_user_keyboard(bot_user_id),
             parse_mode="Markdown",
         )
-        await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
     else:
-        await bot.delete_message(message.chat.id, message.message_id)
+        try:
+            await bot.delete_message(message.chat.id, message.message_id)
+        except Exception as e:
+            logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
         sent_message = await message.answer(
             "Неверный формат. Пожалуйста, введите номер телефона в формате - 89995552211",
             parse_mode="Markdown"
@@ -78,9 +84,12 @@ async def update_email(message: Message, state: FSMContext):
             reply_markup=await update_user_keyboard(bot_user_id),
             parse_mode="Markdown",
         )
-        await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
     else:
-        await bot.delete_message(message.chat.id, message.message_id)
+        try:
+            await bot.delete_message(message.chat.id, message.message_id)
+        except Exception as e:
+            logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
         sent_message = await message.answer(
             "Неверный формат. Пожалуйста, адрес электронной почты в следующем формате - example@mail.ru",
             parse_mode="Markdown"
@@ -97,7 +106,7 @@ async def update_city(message: Message, state: FSMContext):
         reply_markup=await update_user_keyboard(bot_user_id),
         parse_mode="Markdown",
     )
-    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
 
 
 async def update_user_data(state: FSMContext):

@@ -27,6 +27,7 @@ services:
     env_file:
       - .env.docker
     environment:
+      - TZ=Europe/Moscow
       - APP_PORT=8000
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}

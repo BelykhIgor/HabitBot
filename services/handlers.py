@@ -597,7 +597,7 @@ async def update_habit_by_id(habit_info) -> [Habit, None]:
             if habit_description is not None:
                 habit.comments = habit_description
             if all_duration is not None:
-                habit.duration = all_duration
+                habit.duration = int(all_duration)
             if reminder_time is not None:
                 habit.reminder_time = reminder_time
 
@@ -926,7 +926,7 @@ async def random_habit():
        - Логирует ошибку, если файл не может быть загружен.
     """
     logger.info("Start random_habit")
-    file_path = "../habit_bot/wisdom_about_habits.txt"
+    file_path = "./habit_bot/wisdom_about_habits.txt"
     try:
         with open(file_path, "r", encoding="UTF-8") as file:
             habit =file.read().split("\n")

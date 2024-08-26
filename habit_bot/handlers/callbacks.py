@@ -63,7 +63,7 @@ async def handle_main_menu(call: CallbackQuery):
     Returns:
     None
     """
-    bot_user_id = call.message.from_user.id
+    bot_user_id = call.from_user.id
     if call.data == "main_menu":
         try:
             # Удаление команды от кнопки
@@ -71,9 +71,9 @@ async def handle_main_menu(call: CallbackQuery):
         except Exception as e:
             logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
 
-        await clear_message_in_chat(call.message.chat.id, bot_user_id)
+        # await clear_message_in_chat(call.message.chat.id, bot_user_id)
         sent_message = await call.message.answer("Главное меню:", reply_markup=await create_user_menu())
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+        # await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         # sent_message_ids.append(sent_message.message_id)
 
 
@@ -97,16 +97,16 @@ async def handle_main_menu(call: CallbackQuery, state: FSMContext):
     Returns:
     None
     """
-    bot_user_id = call.message.from_user.id
+    bot_user_id = call.from_user.id
     if call.data == "sign_in":
         await state.set_state(UserEntry.nickname)
         sent_message = await call.message.answer("Введите ваше имя и фамилию:")
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         # sent_message_ids.append(sent_message.message_id)
     elif call.data == "profile":
         await state.set_state(UserRegistration.nickname)
         sent_message = await call.message.answer("Введите ваше имя и фамилию:")
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         # sent_message_ids.append(sent_message.message_id)
 
 
@@ -147,17 +147,17 @@ async def handle_main_menu(call: CallbackQuery, state: FSMContext):
             await bot.delete_message(call.message.chat.id, call.message.message_id)
         except Exception as e:
             logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-        await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#         await clear_message_in_chat(call.message.chat.id, bot_user_id)
         await state.set_state(CreateHabit.habit_name)
         sent_message = await call.message.answer("Введите название привычки:", parse_mode='Markdown')
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
     elif call.data == "process_habit":
         try:
             # Удаление команды от кнопки
             await bot.delete_message(call.message.chat.id, call.message.message_id)
         except Exception as e:
             logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-        await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#         await clear_message_in_chat(call.message.chat.id, bot_user_id)
 
         habit_list = await get_not_completed_habit_list(bot_user_id)
         if habit_list != []:
@@ -166,11 +166,11 @@ async def handle_main_menu(call: CallbackQuery, state: FSMContext):
                 "*Ваши текущие привычки:*\n_Для получения подробной информации нажмите на кнопку с названием привычки_",
                 reply_markup=habit_menu, parse_mode="Markdown"
             )
-            await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         else:
             sent_message = await call.message.answer("У вас нет ни одной незавершенной привычки!",
                                                 reply_markup=await create_user_menu())
-            await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
     elif call.data == "main_user_menu":
         try:
@@ -178,11 +178,11 @@ async def handle_main_menu(call: CallbackQuery, state: FSMContext):
             await bot.delete_message(call.message.chat.id, call.message.message_id)
         except Exception as e:
             logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-        await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#         await clear_message_in_chat(call.message.chat.id, bot_user_id)
         sent_message = await call.message.answer(
             "*Выберите нужное действие:*", reply_markup=get_user_menu(), parse_mode="Markdown"
         )
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
 
 @router.callback_query(lambda call: call.data.startswith("habit_item_"))
@@ -205,7 +205,7 @@ async def handle_habit_item(call: CallbackQuery):
     Returns:
     None
     """
-    bot_user_id = call.message.from_user.id
+    bot_user_id = call.from_user.id
     habit_id = int(call.data.split("_")[2])
     habit_info = await get_habit_info_by_id(habit_id)
 
@@ -214,12 +214,12 @@ async def handle_habit_item(call: CallbackQuery):
         await bot.delete_message(call.message.chat.id, call.message.message_id)
     except Exception as e:
         logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-    await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#     await clear_message_in_chat(call.message.chat.id, bot_user_id)
 
 
     sent_message = await bot.send_message(
         call.message.chat.id, f"{habit_info}", parse_mode="Markdown", reply_markup=await get_habit_info_menu(habit_id))
-    await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#     await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
 
 # Обработчик для динамических кнопок привычек
@@ -243,7 +243,7 @@ async def handle_habit_item(call: CallbackQuery):
    Returns:
    None
    """
-    bot_user_id = call.message.from_user.id
+    bot_user_id = call.from_user.id
     habit_id = int(call.data.split("_")[2])
     response = await get_habit_by_id(habit_id)
     try:
@@ -251,7 +251,7 @@ async def handle_habit_item(call: CallbackQuery):
         await bot.delete_message(call.message.chat.id, call.message.message_id)
     except Exception as e:
         logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-    await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#     await clear_message_in_chat(call.message.chat.id, bot_user_id)
 
     if isinstance(response, Habit):
         sent_message = await bot.send_message(
@@ -260,10 +260,10 @@ async def handle_habit_item(call: CallbackQuery):
             parse_mode="Markdown",
             reply_markup=await get_confirmation_del_habit(habit_id),
         )
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
     else:
         sent_message = await bot.send_message(call.message.chat.id, f"Ошибка:\n{response}")
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
 
 # Обработка подтверждения удаления.
@@ -290,7 +290,7 @@ async def handle_habit_item(call: CallbackQuery):
     Returns:
     None
     """
-    bot_user_id = call.message.from_user.id
+    bot_user_id = call.from_user.id
     habit_id = int(call.data.split("_")[1])
     success = await habit_delete(habit_id)
     try:
@@ -298,29 +298,29 @@ async def handle_habit_item(call: CallbackQuery):
         await bot.delete_message(call.message.chat.id, call.message.message_id)
     except Exception as e:
         logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-    await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#     # await clear_message_in_chat(call.message.chat.id, bot_user_id)
 
     if success:
         sent_message = await bot.send_message(
             call.message.chat.id, f"Привычка успешно удалена!")
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         sent_message = await call.message.answer(
             "*Выберите нужное действие:*", reply_markup=get_user_menu(), parse_mode="Markdown"
         )
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         try:
             # Удаление команды от кнопки
             await delete_job_reminder(habit_id)
             logger.info(f"Запись напоминания для привычки - {habit_id} успешно удалена.")
         except Exception as e:
             logger.warning(f"При удалении записи напоминания привычки - {habit_id} произошла ошибка :{e}")
-        await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#         await clear_message_in_chat(call.message.chat.id, bot_user_id)
 
     else:
-        await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#         await clear_message_in_chat(call.message.chat.id, bot_user_id)
         sent_message = await bot.send_message(
             call.message.chat.id, f"При удалении возникла непредвиденная ошибка")
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
 
 # Обработка команды, если передумал удалять привычку.
@@ -343,22 +343,23 @@ async def handle_habit_item(call: CallbackQuery):
     Returns:
     None
     """
-    bot_user_id = call.message.from_user.id
+    bot_user_id = call.from_user.id
     try:
         # Удаление команды от кнопки
         await bot.delete_message(call.message.chat.id, call.message.message_id)
     except Exception as e:
         logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-    await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#     await clear_message_in_chat(call.message.chat.id, bot_user_id)
 
-    habit_list = await get_habit_list()
+    habit_list = await get_not_completed_habit_list(bot_user_id)
+    logger.info(f"ПОлучили данные при подтсверждении удаления - {habit_list}, botID - {bot_user_id}")
     habit_menu = await get_habit_list_menu(habit_list)
 
     sent_message = await call.message.answer(
         "*Ваши текущие привычки:*\n_Для получения подробной информации нажмите на кнопку с названием привычки_",
         reply_markup=habit_menu, parse_mode="Markdown"
     )
-    await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#     await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
 
 
@@ -385,7 +386,7 @@ async def handle_habit_item(call: CallbackQuery):
     Returns:
     None
     """
-    bot_user_id = call.message.from_user.id
+    bot_user_id = call.from_user.id
     data_parts = call.data.split("_")
     action = data_parts[1]
     try:
@@ -393,10 +394,10 @@ async def handle_habit_item(call: CallbackQuery):
         await bot.delete_message(call.message.chat.id, call.message.message_id)
     except Exception as e:
         logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-    await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#     await clear_message_in_chat(call.message.chat.id, bot_user_id)
 
     if action == "complected":
-        await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#         # await clear_message_in_chat(call.message.chat.id, bot_user_id)
         habit_id = int(data_parts[2])
         complected = await mark_habit_completed(habit_id)
         if complected:
@@ -406,10 +407,10 @@ async def handle_habit_item(call: CallbackQuery):
                 reply_markup=await get_habit_info_menu(habit_id),
                 parse_mode="Markdown",
             )
-            await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
         else:
-            await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#             # await clear_message_in_chat(call.message.chat.id, bot_user_id)
             habit_info = await get_habit_info_by_id(habit_id)
             sent_message = await bot.send_message(
                 call.message.chat.id,
@@ -417,11 +418,11 @@ async def handle_habit_item(call: CallbackQuery):
                 reply_markup=await get_habit_info_menu(habit_id),
                 parse_mode="Markdown",
             )
-            await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
     elif action == "not":
         habit_id = int(data_parts[3])
         not_complected = await mark_habit_not_completed(habit_id)
-        await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#         # await clear_message_in_chat(call.message.chat.id, bot_user_id)
         if not_complected:
             habit_info = await get_habit_info_by_id(habit_id)
             sent_message = await bot.send_message(
@@ -429,9 +430,9 @@ async def handle_habit_item(call: CallbackQuery):
                 reply_markup=await get_habit_info_menu(habit_id),
                 parse_mode="Markdown",
             )
-            await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         else:
-            await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#             # await clear_message_in_chat(call.message.chat.id, bot_user_id)
             habit_info = await get_habit_info_by_id(habit_id)
             sent_message = await bot.send_message(
                 call.message.chat.id,
@@ -439,14 +440,14 @@ async def handle_habit_item(call: CallbackQuery):
                 reply_markup=await get_habit_info_menu(habit_id),
                 parse_mode="Markdown",
             )
-            await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
     else:
         sent_message = await bot.send_message(
             call.message.chat.id,
             "Неизвестное действие.",
             reply_markup=get_user_menu(),
         )
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
 
 @router.callback_query(
@@ -468,13 +469,13 @@ async def handle_habit_item(call: CallbackQuery):
     Returns:
     None
     """
-    bot_user_id = call.message.from_user.id
+    bot_user_id = call.from_user.id
     try:
         # Удаление команды от кнопки
         await bot.delete_message(call.message.chat.id, call.message.message_id)
     except Exception as e:
         logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-    await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#     # await clear_message_in_chat(call.message.chat.id, bot_user_id)
 
 
     data_parts = call.data.split("_")
@@ -487,7 +488,7 @@ async def handle_habit_item(call: CallbackQuery):
         reply_markup=await create_update_keyboard(habit_id),
         parse_mode="Markdown"
     )
-    await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#     await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
 
 # Обработка функции редактирования привычек
@@ -519,13 +520,13 @@ async def update_habit_callback(call: CallbackQuery, state: FSMContext):
     Returns:
     None
     """
-    bot_user_id = call.message.from_user.id
+    bot_user_id = call.from_user.id
     try:
         # Удаление команды от кнопки
         await bot.delete_message(call.message.chat.id, call.message.message_id)
     except Exception as e:
         logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-    await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#     await clear_message_in_chat(call.message.chat.id, bot_user_id)
 
     logger.info(f"Start update_habit_callback")
     data_parts = call.data.split("_")
@@ -534,12 +535,12 @@ async def update_habit_callback(call: CallbackQuery, state: FSMContext):
 
     if call.data.startswith("habit_name_"):
         sent_message = await call.message.answer("Введите название привычки:", parse_mode='Markdown')
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         await state.set_state(UpdateHabit.habit_name)
 
     elif call.data.startswith("habit_description_"):
         sent_message = await call.message.answer("Введите описание привычки:", parse_mode='Markdown')
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         await state.set_state(UpdateHabit.habit_description)
 
     elif call.data.startswith("all_duration_"):
@@ -547,7 +548,7 @@ async def update_habit_callback(call: CallbackQuery, state: FSMContext):
             "Укажите планируемое количество дней выполнения заданий _Например 15 или 21_: ",
             parse_mode='Markdown'
         )
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         await state.set_state(UpdateHabit.all_duration)
 
     elif call.data.startswith("reminder_time_"):
@@ -555,23 +556,23 @@ async def update_habit_callback(call: CallbackQuery, state: FSMContext):
             "В какое время отправить напоминание?\n _Например 16:00 или 10:30_",
             parse_mode='Markdown'
         )
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         await state.set_state(UpdateHabit.reminder_time)
 
     elif call.data.startswith("update_save_"):
         upd_habit = await save_update_habit(state)
         if upd_habit:
-            habit_list = await get_habit_list()
+            habit_list = await get_not_completed_habit_list(bot_user_id)
             habit_menu = await get_habit_list_menu(habit_list)
-            await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#             # await clear_message_in_chat(call.message.chat.id, bot_user_id)
             sent_message = await call.message.answer(
                 f"Привычка '{upd_habit.habit_name}' успешно обновлена.",
                 reply_markup=habit_menu, parse_mode='Markdown')
-            await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         else:
-            await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#             # await clear_message_in_chat(call.message.chat.id, bot_user_id)
             sent_message = await call.message.answer("Ошибка при обновлении привычки.")
-            await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
 
 @router.callback_query(
@@ -584,13 +585,13 @@ async def handle_edit_profile(call: CallbackQuery):
         await bot.delete_message(call.message.chat.id, call.message.message_id)
     except Exception as e:
         logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-    await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#     await clear_message_in_chat(call.message.chat.id, bot_user_id)
     sent_message = await bot.send_message(
         call.message.chat.id, f"*Выберите что хотите изменить.*\n",
         reply_markup=await update_user_keyboard(bot_user_id),
         parse_mode="Markdown"
     )
-    await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#     await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
 
 
 @router.callback_query(
@@ -609,31 +610,31 @@ async def update_habit_callback(call: CallbackQuery, state: FSMContext):
         await bot.delete_message(call.message.chat.id, call.message.message_id)
     except Exception as e:
         logger.warning(f"Не удалось удалить сообщение {call.message.message_id}: {e}")
-    await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#     await clear_message_in_chat(call.message.chat.id, bot_user_id)
 
     if call.data.startswith("user_name_"):
         sent_message = await call.message.answer("Введите имя:", parse_mode='Markdown')
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         await state.set_state(UpdateProfile.fullname)
 
     elif call.data.startswith("user_age_"):
         sent_message = await call.message.answer("Введите возраст:", parse_mode='Markdown')
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         await state.set_state(UpdateProfile.age)
 
     elif call.data.startswith("user_phone_"):
         sent_message = await call.message.answer("Введите номер телефона:", parse_mode='Markdown')
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         await state.set_state(UpdateProfile.phone)
 
     elif call.data.startswith("user_mail_"):
         sent_message = await call.message.answer("Введите адрес электронной почты", parse_mode='Markdown')
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         await state.set_state(UpdateProfile.email)
 
     elif call.data.startswith("user_city_"):
         sent_message = await call.message.answer("Введите город", parse_mode='Markdown')
-        await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         await state.set_state(UpdateProfile.city)
 
     elif call.data.startswith("save_user_data_"):
@@ -641,14 +642,14 @@ async def update_habit_callback(call: CallbackQuery, state: FSMContext):
         upd_user = await update_user_data(state)
         if upd_user:
             user_info = await get_user_info(bot_user_id)
-            await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#             await clear_message_in_chat(call.message.chat.id, bot_user_id)
             sent_message = await call.message.answer(
                 f"Данные успешно обновлены!\n{user_info}",
                 reply_markup=await edit_profile_menu(bot_user_id),
                 parse_mode='Markdown'
             )
-            await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
         else:
-            await clear_message_in_chat(call.message.chat.id, bot_user_id)
+#             await clear_message_in_chat(call.message.chat.id, bot_user_id)
             sent_message = await call.message.answer("Ошибка при обновлении данных.")
-            await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)
+#             await record_message_id(call.message.chat.id, sent_message.message_id, bot_user_id)

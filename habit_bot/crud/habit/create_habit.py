@@ -38,12 +38,15 @@ async def process_habit_name(message: Message, state: FSMContext):
     bot_user_id = message.from_user.id
     await state.update_data(habit_name=message.text)
     await state.set_state(CreateHabit.duration)
-    await bot.delete_message(message.chat.id, message.message_id)
+    try:
+        await bot.delete_message(message.chat.id, message.message_id)
+    except Exception as e:
+        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
     sent_message = await message.answer(
         "Укажите планируемое количество дней выполнения заданий _Например 15 или 21_: ",
         parse_mode="Markdown",
     )
-    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+    # await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
 
 
 async def process_duration(message: Message, state: FSMContext):
@@ -71,17 +74,23 @@ async def process_duration(message: Message, state: FSMContext):
     if validate_count_day_format(duration):
         await state.update_data(duration=duration)
         await state.set_state(CreateHabit.comments)
-        await bot.delete_message(message.chat.id, message.message_id)
-        await clear_message_in_chat(message.chat.id, bot_user_id)
+        try:
+            await bot.delete_message(message.chat.id, message.message_id)
+        except Exception as e:
+            logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
+        # await clear_message_in_chat(message.chat.id, bot_user_id)
         sent_message = await message.answer("Введите описание: ")
-        await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
     else:
-        await bot.delete_message(message.chat.id, message.message_id)
+        try:
+            await bot.delete_message(message.chat.id, message.message_id)
+        except Exception as e:
+            logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
         sent_message = await message.answer(
             "Неверный формат. Пожалуйста, введите количество дней от 1 до 365.",
             parse_mode="Markdown"
         )
-        await record_message_id(message.chat.id, sent_message.message_id, message.from_user.id)
+        # await record_message_id(message.chat.id, sent_message.message_id, message.from_user.id)
 
 
 
@@ -108,12 +117,15 @@ async def process_comments(message: Message, state: FSMContext):
     bot_user_id = message.from_user.id
     await state.update_data(comments=message.text)
     await state.set_state(CreateHabit.reminder_time)
-    await bot.delete_message(message.chat.id, message.message_id)
+    try:
+        await bot.delete_message(message.chat.id, message.message_id)
+    except Exception as e:
+        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
     sent_message = await message.answer(
         "В какое время отправить напоминание?\n _Например 16:00 или 10:30_",
         parse_mode="Markdown"
     )
-    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
 
 
 
@@ -157,7 +169,7 @@ async def process_reminder_time_and_create_habit(message: Message, state: FSMCon
             data["bot_user_id"] = user.id
             habit_info = data
             await state.clear()
-            await clear_message_in_chat(message.chat.id, bot_user_id)
+            # await clear_message_in_chat(message.chat.id, bot_user_id)
             # sent_message = await bot.send_message(message.chat.id,
             #                        f"Спасибо! Вот ваши данные:\n"
             #                        f"Название привычки: {habit_info['habit_name']}\n"
@@ -165,18 +177,18 @@ async def process_reminder_time_and_create_habit(message: Message, state: FSMCon
             #                        f"Комментарий: {habit_info['comments']}\n"
             #                        f"Отправлять напоминание в - {habit_info['reminder_time']}\n"
             #                        )
-            # await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#             # await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
             async with get_async_session() as session:
                 habit = await create_habit(habit_info, session)
                 if habit:
                     sent_message = await bot.send_message(message.chat.id, "Привычка успешно создана", reply_markup=await create_user_menu())
-                    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#                     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
                     logger.info("Отправляем напоминание в работу")
                     job = await add_job_reminder(bot_user_id, habit.reminder_time, habit.habit_name, habit.id)
                     logger.info(f"Результат добавления напоминания - {job}")
                 else:
                     sent_message = await bot.send_message(message.chat.id, "При создании привычки произошла ошибка")
-                    await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+#                     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
         else:
             error_message = "Пользователь не найден в базе данных"
             return error_message
@@ -186,4 +198,4 @@ async def process_reminder_time_and_create_habit(message: Message, state: FSMCon
             "Неверный формат времени. Пожалуйста, введите время в формате HH:MM.\n _Например 16:00 или 10:30_",
             parse_mode="Markdown"
         )
-        await record_message_id(message.chat.id, sent_message.message_id, message.from_user.id)
+        # await record_message_id(message.chat.id, sent_message.message_id, message.from_user.id)
