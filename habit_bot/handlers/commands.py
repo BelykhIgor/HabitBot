@@ -7,11 +7,12 @@ from aiogram.fsm.context import FSMContext
 
 from app.db.database import get_async_session
 from app.models import User
-from habit_bot.bot_init import bot
+from habit_bot.bot_init import bot, sent_message_ids
 from habit_bot.button_menu import create_user_menu, get_habit_list_menu, sign_in_menu, sign_up_menu, edit_profile_menu
 from habit_bot.crud.users.user_info import get_user_info
 from habit_bot.states_group.states import UserRegistration, CreateHabit
-from services.handlers import  get_completed_habit_list, get_user_by_bot_user_id, get_not_completed_habit_list
+from services.handlers import get_completed_habit_list, get_user_by_bot_user_id, get_not_completed_habit_list, \
+    add_sent_message_ids, delete_message_ids, clear_chat
 
 logging.basicConfig(level=logging.INFO)
 logger: logging.Logger = logging.getLogger(__name__)
@@ -38,18 +39,11 @@ async def start(message: Message):
     """
     bot_user_id = message.from_user.id
     chat_id = message.chat.id
-    logger.warning(f"message.chat.id - {message.chat.id}, message_id - {message.message_id}")
-    try:
-        await bot.delete_message(message.chat.id, message.message_id)
-    except Exception as e:
-        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
+    logger.info(f"message.chat.id - {message.chat.id}, message_id - {message.message_id}")
 
     user = await get_user_by_bot_user_id(bot_user_id)
-    # keyboard, action = await create_static_main_menu(user)
-    # await clear_message_in_chat(chat_id, bot_user_id)
 
     if isinstance(user, User):
-        logger.warning(f"bot_user_id - {bot_user_id}, chat_id - {message.message_id}")
         async with get_async_session() as session:
             user = await get_user_by_bot_user_id(bot_user_id)
             user.chat_id = chat_id
@@ -60,14 +54,14 @@ async def start(message: Message):
            reply_markup=await sign_in_menu(),
            parse_mode='Markdown',
         )
-        # await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+        await add_sent_message_ids(message.chat.id, sent_message.message_id)
     else:
         sent_message = await message.answer(
             "Для работы в системе необходимо зарегистрироваться ⬇️",
             reply_markup=await sign_up_menu(),
             parse_mode='Markdown',
         )
-#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+        await add_sent_message_ids(message.chat.id, sent_message.message_id)
 
 
 @router.message(Command(commands=['help']))
@@ -87,20 +81,13 @@ async def send_help(message: Message):
        None
     """
     bot_user_id = message.from_user.id
-    try:
-        await bot.delete_message(message.chat.id, message.message_id)
-    except Exception as e:
-        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
-    try:
-        logger.info("Start item Help")
-        # await clear_message_in_chat(message.chat.id, bot_user_id)
-        sent_message = await message.answer(
-            "Я могу отвечать на ваши сообщения. Просто напишите что-нибудь!",
-            parse_mode='Markdown'
-        )
-#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
-    except Exception as e:
-        logger.error(f"Error in send_help: {e}")
+    sent_message = await message.answer(
+        "Я могу отвечать на ваши сообщения. Просто напишите что-нибудь!",
+        parse_mode='Markdown'
+    )
+    await add_sent_message_ids(message.chat.id, sent_message.message_id)
+    logger.info(f"Словарь с ID сообщений - {sent_message_ids}")
+
 
 
 @router.message(Command(commands=['about']))
@@ -121,16 +108,11 @@ async def send_about(message: Message):
     """
     bot_user_id = message.from_user.id
     try:
-        await bot.delete_message(message.chat.id, message.message_id)
-    except Exception as e:
-        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
-    try:
         logger.info("Start item About")
-#         await clear_message_in_chat(message.chat.id, bot_user_id)
         sent_message = await message.answer(
             "Сервис для эффективного управления и формирования привычек.\n"
             "С помощью данного сервиса можно:\n\n"
-            "_-добавлять редактировать или удалять привычки_\n"
+            "_-добавлять, редактировать или удалять привычки_\n"
             "_-фиксировать выполнение привычек_\n"
             "_-получать оповещения для соблюдения привычек_\n"
             "_-ваши данные под надежной защитой_\n\n"
@@ -138,7 +120,8 @@ async def send_about(message: Message):
             "Телеграм-бот станет удобным инструментом для внедрения полезных привычек в повседневность",
             parse_mode='Markdown'
         )
-#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+        result = await add_sent_message_ids(message.chat.id, sent_message.message_id)
+        logger.info(f"Получили словарь с данными - {result}")
     except Exception as e:
         logger.error(f"Error in send_about: {e}")
 
@@ -161,17 +144,12 @@ async def send_contact(message: Message):
     """
     bot_user_id = message.from_user.id
     try:
-        await bot.delete_message(message.chat.id, message.message_id)
-    except Exception as e:
-        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
-#         await clear_message_in_chat(message.chat.id, bot_user_id)
-    try:
         logger.info("Start item Contact")
         sent_message = await message.answer(
             "Свяжитесь с нами по адресу: contact@example.com",
             parse_mode='Markdown'
         )
-#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+        await add_sent_message_ids(message.chat.id, sent_message.message_id)
     except Exception as e:
         logger.error(f"Error in send_contact: {e}")
 
@@ -194,13 +172,10 @@ async def user_registration(message: Message, state: FSMContext):
        None
     """
     bot_user_id = message.from_user.id
-    try:
-        await bot.delete_message(message.chat.id, message.message_id)
-    except Exception as e:
-        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
-#     await clear_message_in_chat(message.chat.id, bot_user_id)
+    await add_sent_message_ids(message.chat.id, message.message_id)
     await state.set_state(UserRegistration.nickname)
     sent_message = await message.answer("Введите ваш никнейм латинскими буквами:")
+    await add_sent_message_ids(message.chat.id, sent_message.message_id)
 #     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
 
 
@@ -220,13 +195,10 @@ async def entry_user(message: Message):
         None
     """
     bot_user_id = message.from_user.id
-    try:
-        await bot.delete_message(message.chat.id, message.message_id)
-    except Exception as e:
-        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
-#     await clear_message_in_chat(message.chat.id, bot_user_id)
+    await add_sent_message_ids(message.chat.id, message.message_id)
+    await clear_chat(sent_message_ids, message)
     sent_message = await message.answer("Добро пожаловать!", reply_markup=await create_user_menu())
-#     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+    await add_sent_message_ids(message.chat.id, sent_message.message_id)
 
 
 @router.message(lambda message: message.text == 'Незавершенные привычки')
@@ -247,13 +219,8 @@ async def entry_user(message: Message):
         None
     """
     bot_user_id = message.from_user.id
-    try:
-        await bot.delete_message(message.chat.id, message.message_id)
-    except Exception as e:
-        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
-
-#     await clear_message_in_chat(message.chat.id, bot_user_id)
-
+    await add_sent_message_ids(message.chat.id, message.message_id)
+    await clear_chat(sent_message_ids, message)
     habit_list = await get_not_completed_habit_list(bot_user_id)
     if habit_list != []:
         habit_menu = await get_habit_list_menu(habit_list)
@@ -261,10 +228,10 @@ async def entry_user(message: Message):
             "*Ваши текущие привычки:*\n_Для получения подробной информации нажмите на кнопку с названием привычки_",
             reply_markup=habit_menu, parse_mode="Markdown"
         )
-#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+        await add_sent_message_ids(message.chat.id, sent_message.message_id)
     else:
         sent_message = await message.answer("У вас нет ни одной незавершенной привычки!", reply_markup=await create_user_menu())
-#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+        await add_sent_message_ids(message.chat.id, sent_message.message_id)
 
 
 
@@ -286,15 +253,11 @@ async def entry_user(message: Message, state: FSMContext):
         None
     """
     bot_user_id = message.from_user.id
-    try:
-        # Удаление команды от кнопки
-        await bot.delete_message(message.chat.id, message.message_id)
-    except Exception as e:
-        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
-#     await clear_message_in_chat(message.chat.id, bot_user_id)
+    await add_sent_message_ids(message.chat.id, message.message_id)
+    await clear_chat(sent_message_ids, message)
     await state.set_state(CreateHabit.habit_name)
     sent_message = await message.answer("Введите название привычки:", parse_mode='Markdown')
-#     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+    await add_sent_message_ids(message.chat.id, sent_message.message_id)
 
 
 @router.message(lambda message: message.text == "Завершенные привычки")
@@ -314,12 +277,8 @@ async def completed_habits(message: Message):
         None
     """
     bot_user_id = message.from_user.id
-    try:
-        await bot.delete_message(message.chat.id, message.message_id)
-    except Exception as e:
-        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
-#     await clear_message_in_chat(message.chat.id, bot_user_id)
-
+    await add_sent_message_ids(message.chat.id, message.message_id)
+    await clear_chat(sent_message_ids, message)
     completed_list = await get_completed_habit_list(bot_user_id)
     if completed_list is None:
         sent_message = await message.answer(
@@ -327,7 +286,7 @@ async def completed_habits(message: Message):
             parse_mode='Markdown',
             reply_markup=await create_user_menu()
         )
-#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+        await add_sent_message_ids(message.chat.id, sent_message.message_id)
     else:
         completed_habit_menu = await get_habit_list_menu(completed_list)
         sent_message = await message.answer(
@@ -335,19 +294,15 @@ async def completed_habits(message: Message):
             parse_mode='Markdown',
             reply_markup=completed_habit_menu
         )
-#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
-
+        await add_sent_message_ids(message.chat.id, sent_message.message_id)
 
 
 @router.message(lambda message: message.text == 'Профиль')
 async def user_info(message: Message):
     logger.info("Start get profile")
     bot_user_id = message.from_user.id
-    try:
-        await bot.delete_message(message.chat.id, message.message_id)
-    except Exception as e:
-        logger.warning(f"Не удалось удалить сообщение {message.message_id}: {e}")
-#     await clear_message_in_chat(message.chat.id, bot_user_id)
+    await add_sent_message_ids(message.chat.id, message.message_id)
+    await clear_chat(sent_message_ids, message)
     user_info = await get_user_info(bot_user_id)
     if user_info:
         sent_message = await message.answer(
@@ -355,4 +310,4 @@ async def user_info(message: Message):
             parse_mode='Markdown',
             reply_markup=await edit_profile_menu(bot_user_id),
         )
-#         await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+        await add_sent_message_ids(message.chat.id, sent_message.message_id)

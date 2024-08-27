@@ -8,7 +8,8 @@ from apscheduler.triggers.cron import CronTrigger
 from habit_bot.bot_init import scheduler
 from habit_bot.button_menu import  create_update_keyboard
 from habit_bot.states_group.states import  UpdateHabit
-from services.handlers import update_habit_by_id, record_message_id, add_job_reminder, delete_job_reminder
+from services.handlers import update_habit_by_id, record_message_id, add_job_reminder, delete_job_reminder, \
+    add_sent_message_ids
 
 logging.basicConfig(level=logging.INFO)
 logger: logging.Logger = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ async def update_habit_name(message: Message, state: FSMContext):
         reply_markup=await create_update_keyboard(habit_id),
         parse_mode="Markdown",
     )
-    # await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+    await add_sent_message_ids(message.chat.id, sent_message.message_id)
 
 
 async def update_habit_description(message: Message, state: FSMContext):
@@ -68,6 +69,7 @@ async def update_habit_description(message: Message, state: FSMContext):
     - Не используется.
     """
     bot_user_id = message.from_user.id
+    await add_sent_message_ids(message.chat.id, message.message_id)
     data = await state.get_data()
     habit_id = data["habit_id"]
     await state.update_data(habit_description=message.text)
@@ -77,7 +79,8 @@ async def update_habit_description(message: Message, state: FSMContext):
         reply_markup=await create_update_keyboard(habit_id),
         parse_mode="Markdown",
     )
-#     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+    await add_sent_message_ids(message.chat.id, sent_message.message_id)
+
 
 
 async def update_habit_duration(message: Message, state: FSMContext):
@@ -103,6 +106,7 @@ async def update_habit_duration(message: Message, state: FSMContext):
     bot_user_id = message.from_user.id
     data = await state.get_data()
     habit_id = data["habit_id"]
+    await add_sent_message_ids(message.chat.id, message.message_id)
     await state.update_data(all_duration=message.text)
     await state.set_state(UpdateHabit.reminder_time)
     sent_message = await message.answer(
@@ -110,7 +114,7 @@ async def update_habit_duration(message: Message, state: FSMContext):
         reply_markup=await create_update_keyboard(habit_id),
         parse_mode="Markdown",
     )
-#     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+    await add_sent_message_ids(message.chat.id, sent_message.message_id)
 
 
 async def update_habit_reminder(message: Message, state: FSMContext):
@@ -136,6 +140,7 @@ async def update_habit_reminder(message: Message, state: FSMContext):
     bot_user_id = message.from_user.id
     data = await state.get_data()
     habit_id = data["habit_id"]
+    await add_sent_message_ids(message.chat.id, message.message_id)
     await state.update_data(reminder_time=message.text)
     await state.update_data(bot_user_id=bot_user_id)
     await state.set_state(UpdateHabit.save_update)
@@ -144,7 +149,7 @@ async def update_habit_reminder(message: Message, state: FSMContext):
         reply_markup=await create_update_keyboard(habit_id),
         parse_mode="Markdown",
     )
-#     await record_message_id(message.chat.id, sent_message.message_id, bot_user_id)
+    await add_sent_message_ids(message.chat.id, sent_message.message_id)
 
 
 async def save_update_habit(state: FSMContext):

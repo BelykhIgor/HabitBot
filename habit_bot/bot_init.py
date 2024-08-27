@@ -16,9 +16,8 @@ bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 scheduler = AsyncIOScheduler()
-# scheduler.start()
 
-sent_message_ids = []
+sent_message_ids = {}
 
 
 async def set_commands(bot: Bot):

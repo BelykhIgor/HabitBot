@@ -3,6 +3,8 @@ import logging
 import re
 from datetime import datetime
 import random
+
+import aiogram
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy import and_, select, delete
 from sqlalchemy.exc import IntegrityError
@@ -17,6 +19,51 @@ from habit_bot.bot_init import bot, sent_message_ids, scheduler
 
 logging.basicConfig(level=logging.INFO)
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+async def delete_message_ids(message):
+    try:
+        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    except aiogram.exceptions.TelegramBadRequest as e:
+        if "message to delete not found" in str(e):
+            logger.info(f"Message {message.message_id} not found, might have been deleted already.")
+        else:
+            logger.warning(f"Failed to delete message {message.message_id}: {e}")
+    except Exception as e:
+        logger.warning(f"Unexpected error when trying to delete message {message.message_id}: {e}")
+
+
+async def add_sent_message_ids(key, value):
+    if key in sent_message_ids:
+        sent_message_ids[key].append(value)
+    else:
+        sent_message_ids[key] = [value]
+    return sent_message_ids
+
+
+async def clear_chat(sent_message_ids, message):
+    """
+    Функция удаления сообщений из чата.
+    Args:
+        sent_message_ids: словарь с ID сообщений и чата
+    Returns:
+
+    """
+    chat_id = message.chat.id
+    if chat_id in sent_message_ids:
+        for user_id in sent_message_ids[chat_id]:
+            try:
+                await bot.delete_message(chat_id=chat_id, message_id=user_id)
+            except aiogram.exceptions.TelegramBadRequest as e:
+                if "message to delete not found" in str(e):
+                    logger.info(f"Message {message.message_id} not found, might have been deleted already.")
+                else:
+                    logger.warning(f"Failed to delete message {chat_id}: {e}")
+            except Exception as e:
+                logger.warning(f"Unexpected error when trying to delete message {chat_id}: {e}")
+        sent_message_ids[chat_id].clear()
+
+
 
 
 async def check_username_and_password(user_data, session: AsyncSession) -> [User, str]:
@@ -684,10 +731,6 @@ async def get_not_completed_habit_list(bot_user_id: int):
             result = await session.execute(query)
             completed_habit_list = result.scalars().all()
             return completed_habit_list
-            # if completed_habit_list:
-            #     return completed_habit_list
-            # else:
-            #     return None
 
 
 async def check_current_day_for_habit():
